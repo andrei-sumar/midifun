@@ -70,7 +70,7 @@ func main() {
 
 		cc := mapHRtoCC(smoothedHR)
 
-		if err := sendMIDICC(out, 1, 1, cc); err != nil {
+		if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.TempoChangeCC, cc); err != nil {
 			fmt.Fprintf(os.Stderr, "Error sending MIDI CC: %v\n", err)
 		} else {
 			fmt.Println("MIDI CC sent successfully")

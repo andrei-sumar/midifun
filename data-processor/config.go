@@ -9,7 +9,9 @@ import (
 
 type Config struct {
 	MIDI struct {
-		PortName string `yaml:"port_name"`
+		PortName      string `yaml:"port_name"`
+		Channel       uint8  `yaml:"channel"`
+		TempoChangeCC uint8  `yaml:"tempo_change_cc"`
 	} `yaml:"midi"`
 	Smoothing struct {
 		WindowWidth int `yaml:"window_width"`

@@ -1,5 +1,7 @@
 midi:
   port_name: "IAC Driver Bus 1"
+  channel: 1
+  tempo_change_cc: 1
 
 smoothing:
   window_width: 5
