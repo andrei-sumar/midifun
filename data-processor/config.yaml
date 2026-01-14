@@ -2,9 +2,11 @@ midi:
   port_name: "IAC Driver Bus 1"
   channel: 1
   tempo_change_cc: 1
+  rapid_growth_cc: 2  # MIDI CC number to send when rapid growth is detected
 
 smoothing:
   window_width: 5
+  rapid_growth_threshold: 5  # Heart rate increase threshold to trigger rapid growth event
 
 data_source:
   type: csv  # pulsoid or csv

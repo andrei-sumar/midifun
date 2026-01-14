@@ -28,9 +28,10 @@ func main() {
 	fmt.Printf("found outport: %s\n", out)
 
 	windowWidth := config.Smoothing.WindowWidth
+	rapidGrowthThreshold := config.Smoothing.RapidGrowthThreshold
 
-	smoother := NewHeartRateSmoother(windowWidth)
-	fmt.Printf("Initialized heart rate smoother with window width: %d\n", windowWidth)
+	processor := NewHeartRateProcessor(windowWidth, rapidGrowthThreshold)
+	fmt.Printf("Initialized heart rate processor with window width: %d, rapid growth threshold: %d\n", windowWidth, rapidGrowthThreshold)
 
 	var fetcher HeartRateFetcher
 
@@ -65,11 +66,20 @@ func main() {
 		}
 
 		hr := hrResp.Data.HeartRate
-		smoothedHR := smoother.AddValue(hr)
+		smoothedHR := processor.AddValue(hr)
 		fmt.Printf("Measured at: %d, Heart rate: %d (smoothed: %d)\n", hrResp.MeasuredAt, hr, smoothedHR)
 
+		// Check for rapid growth and send appropriate MIDI CC
+		if processor.HasRapidGrowth() {
+			// Send rapid growth MIDI CC message
+			if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.RapidGrowthCC, 127); err != nil {
+				fmt.Fprintf(os.Stderr, "Error sending rapid growth MIDI CC: %v\n", err)
+			} else {
+				fmt.Println("Rapid growth detected - MIDI CC sent successfully")
+			}
+		}
+		// Send normal tempo change MIDI CC
 		cc := mapHRtoCC(smoothedHR)
-
 		if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.TempoChangeCC, cc); err != nil {
 			fmt.Fprintf(os.Stderr, "Error sending MIDI CC: %v\n", err)
 		} else {
