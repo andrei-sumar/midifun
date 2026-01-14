@@ -1,0 +1,10 @@
+midi:
+  port_name: "IAC Driver Bus 1"
+
+smoothing:
+  window_width: 5
+
+data_source:
+  type: csv  # pulsoid or csv
+  csv:
+    path: ../heartrate-data/heartrate.csv

@@ -12,15 +12,14 @@ start_time = df["time"].iloc[0]
 end_time = start_time + pd.Timedelta(hours=1)
 df = df[df["time"] <= end_time].copy()
 
-df["heart_rate_smooth"] = df["heart_rate"].rolling(window=5, min_periods=1).mean()
+df["heart_rate_smooth"] = df["heart_rate"].rolling(window=25, min_periods=1).mean()
 
 # spike detection
-window_seconds = 10
+window_length = 10
 spike_threshold = 5
-window_rows = window_seconds
 
 df["heart_rate_window_diff"] = df["heart_rate_smooth"].rolling(
-    window=window_rows, min_periods=1
+    window=window_length, min_periods=1
 ).apply(lambda x: x[-1] - x[0], raw=True)
 
 df["spike"] = df["heart_rate_window_diff"] >= spike_threshold
@@ -44,7 +43,7 @@ fig.add_trace(go.Scatter(
     y=df["heart_rate_smooth"],
     mode="lines",
     name="Smoothed",
-    line=dict(color="red", width=2)
+    line=dict(color="yellow", width=2)
 ))
 
 # Rapid growth spike
@@ -53,7 +52,7 @@ fig.add_trace(go.Scatter(
     y=df["spike_value"],
     mode="markers",
     name="Rapid increase",
-    marker=dict(size=6, color="orange", symbol="triangle-up")
+    marker=dict(size=6, color="red", symbol="triangle-up")
 ))
 
 fig.update_layout(
@@ -67,4 +66,4 @@ fig.update_layout(
     )
 )
 
-fig.show()
+fig.show(renderer="chrome")

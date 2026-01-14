@@ -18,14 +18,34 @@ type HeartRateResponse struct {
 	} `json:"data"`
 }
 
-func fetchHeartRate(client *http.Client, token string) (*HeartRateResponse, error) {
+// HeartRateFetcher defines the interface for fetching heart rate data
+type HeartRateFetcher interface {
+	FetchHeartRate() (*HeartRateResponse, error)
+}
+
+// PulsoidFetcher implements HeartRateFetcher using the Pulsoid API
+type PulsoidFetcher struct {
+	client *http.Client
+	token  string
+}
+
+// NewPulsoidFetcher creates a new PulsoidFetcher instance
+func NewPulsoidFetcher(client *http.Client, token string) *PulsoidFetcher {
+	return &PulsoidFetcher{
+		client: client,
+		token:  token,
+	}
+}
+
+// FetchHeartRate fetches heart rate data from the Pulsoid API
+func (p *PulsoidFetcher) FetchHeartRate() (*HeartRateResponse, error) {
 	req, err := http.NewRequest("GET", apiURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", p.token))
 
-	resp, err := client.Do(req)
+	resp, err := p.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}

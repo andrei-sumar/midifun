@@ -2,4 +2,7 @@ module github.com/andrei-sumar/midifun/data-processor
 
 go 1.24.2
 
-require gitlab.com/gomidi/midi/v2 v2.3.18 // indirect
+require (
+	gitlab.com/gomidi/midi/v2 v2.3.18 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)
