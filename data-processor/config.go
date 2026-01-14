@@ -16,7 +16,8 @@ type Config struct {
 	} `yaml:"midi"`
 	Smoothing struct {
 		WindowWidth          int `yaml:"window_width"`
-		RapidGrowthThreshold int `yaml:"rapid_growth_threshold"`
+		RapidGrowthThreshold int `yaml:"rapid_growth_threshold_bpm"`
+		RapidGrowthCooldown  int `yaml:"rapid_growth_cooldown_seconds"`
 	} `yaml:"smoothing"`
 	DataSource struct {
 		Type string `yaml:"type"`

@@ -6,7 +6,8 @@ midi:
 
 smoothing:
   window_width: 5
-  rapid_growth_threshold: 5  # Heart rate increase threshold to trigger rapid growth event
+  rapid_growth_threshold_bpm: 5  # Heart rate increase threshold to trigger rapid growth event
+  rapid_growth_cooldown_seconds: 10  # Cooldown period in seconds after rapid growth detection before another rapid growth CC can be sent
 
 data_source:
   type: csv  # pulsoid or csv

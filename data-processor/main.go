@@ -29,9 +29,12 @@ func main() {
 
 	windowWidth := config.Smoothing.WindowWidth
 	rapidGrowthThreshold := config.Smoothing.RapidGrowthThreshold
+	rapidGrowthCooldown := time.Duration(config.Smoothing.RapidGrowthCooldown) * time.Second
 
 	processor := NewHeartRateProcessor(windowWidth, rapidGrowthThreshold)
-	fmt.Printf("Initialized heart rate processor with window width: %d, rapid growth threshold: %d\n", windowWidth, rapidGrowthThreshold)
+	fmt.Printf("Initialized heart rate processor with window width: %d, rapid growth threshold: %d, cooldown: %v\n", windowWidth, rapidGrowthThreshold, rapidGrowthCooldown)
+
+	var lastRapidGrowthTime time.Time
 
 	var fetcher HeartRateFetcher
 
@@ -69,16 +72,20 @@ func main() {
 		smoothedHR := processor.AddValue(hr)
 		fmt.Printf("Measured at: %d, Heart rate: %d (smoothed: %d)\n", hrResp.MeasuredAt, hr, smoothedHR)
 
-		// Check for rapid growth and send appropriate MIDI CC
 		if processor.HasRapidGrowth() {
-			// Send rapid growth MIDI CC message
-			if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.RapidGrowthCC, 127); err != nil {
-				fmt.Fprintf(os.Stderr, "Error sending rapid growth MIDI CC: %v\n", err)
+			timeSinceLastRapidGrowth := time.Since(lastRapidGrowthTime)
+			if timeSinceLastRapidGrowth >= rapidGrowthCooldown {
+				if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.RapidGrowthCC, 127); err != nil {
+					fmt.Fprintf(os.Stderr, "Error sending rapid growth MIDI CC: %v\n", err)
+				} else {
+					fmt.Println("Rapid growth detected - MIDI CC sent successfully")
+					lastRapidGrowthTime = time.Now()
+				}
 			} else {
-				fmt.Println("Rapid growth detected - MIDI CC sent successfully")
+				fmt.Printf("Rapid growth detected but cooldown active (%.1fs remaining)\n", (rapidGrowthCooldown - timeSinceLastRapidGrowth).Seconds())
 			}
 		}
-		// Send normal tempo change MIDI CC
+
 		cc := mapHRtoCC(smoothedHR)
 		if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.TempoChangeCC, cc); err != nil {
 			fmt.Fprintf(os.Stderr, "Error sending MIDI CC: %v\n", err)
