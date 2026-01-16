@@ -87,6 +87,7 @@ func main() {
 		}
 
 		cc := mapHRtoCC(smoothedHR, config.MIDI.MinTempo)
+		fmt.Println(config.MIDI.TempoChangeCC)
 		if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.TempoChangeCC, cc); err != nil {
 			fmt.Fprintf(os.Stderr, "Error sending MIDI CC: %v\n", err)
 		} else {

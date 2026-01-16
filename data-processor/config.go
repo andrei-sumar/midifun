@@ -39,5 +39,10 @@ func LoadConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("parsing config file: %w", err)
 	}
 
+	if config.MIDI.Channel < 1 || config.MIDI.Channel > 16 {
+		return nil, fmt.Errorf("midi.channel must be between 1 and 16")
+	}
+	config.MIDI.Channel -= 1 // it is 1..16 in config for readability, but should start with 0
+
 	return &config, nil
 }
