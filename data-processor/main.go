@@ -34,7 +34,7 @@ func main() {
 	processor := NewHeartRateProcessor(windowWidth, rapidGrowthThreshold)
 	fmt.Printf("Initialized heart rate processor with window width: %d, rapid growth threshold: %d, cooldown: %v\n", windowWidth, rapidGrowthThreshold, rapidGrowthCooldown)
 
-	var lastRapidGrowthTime time.Time
+	var lastRapidChangeTime time.Time
 
 	var fetcher HeartRateFetcher
 
@@ -73,21 +73,32 @@ func main() {
 		fmt.Printf("Measured at: %d, Heart rate: %d (smoothed: %d)\n", hrResp.MeasuredAt, hr, smoothedHR)
 
 		if processor.HasRapidGrowth() {
-			timeSinceLastRapidGrowth := time.Since(lastRapidGrowthTime)
-			if timeSinceLastRapidGrowth >= rapidGrowthCooldown {
+			timeSinceLastRapidChange := time.Since(lastRapidChangeTime)
+			if timeSinceLastRapidChange >= rapidGrowthCooldown {
 				if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.RapidGrowthCC, 127); err != nil {
 					fmt.Fprintf(os.Stderr, "Error sending rapid growth MIDI CC: %v\n", err)
 				} else {
 					fmt.Println("Rapid growth detected - MIDI CC sent successfully")
-					lastRapidGrowthTime = time.Now()
+					lastRapidChangeTime = time.Now()
 				}
 			} else {
-				fmt.Printf("Rapid growth detected but cooldown active (%.1fs remaining)\n", (rapidGrowthCooldown - timeSinceLastRapidGrowth).Seconds())
+				fmt.Printf("Rapid growth detected but cooldown active (%.1fs remaining)\n", (rapidGrowthCooldown - timeSinceLastRapidChange).Seconds())
+			}
+		} else if processor.HasDecrease() { //todo: definitely refactor
+			timeSinceLastRapidChange := time.Since(lastRapidChangeTime)
+			if timeSinceLastRapidChange >= rapidGrowthCooldown {
+				if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.DecreaseCC, 127); err != nil {
+					fmt.Fprintf(os.Stderr, "Error sending decrease MIDI CC: %v\n", err)
+				} else {
+					fmt.Println("Decrease detected - MIDI CC sent successfully")
+					lastRapidChangeTime = time.Now()
+				}
+			} else {
+				fmt.Printf("Decrease detected but cooldown active (%.1fs remaining)\n", (rapidGrowthCooldown - timeSinceLastRapidChange).Seconds())
 			}
 		}
 
 		cc := mapHRtoCC(smoothedHR, config.MIDI.MinTempo)
-		fmt.Println(config.MIDI.TempoChangeCC)
 		if err := sendMIDICC(out, config.MIDI.Channel, config.MIDI.TempoChangeCC, cc); err != nil {
 			fmt.Fprintf(os.Stderr, "Error sending MIDI CC: %v\n", err)
 		} else {

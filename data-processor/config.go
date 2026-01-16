@@ -13,6 +13,7 @@ type Config struct {
 		Channel       uint8  `yaml:"channel"`
 		TempoChangeCC uint8  `yaml:"tempo_change_cc"`
 		RapidGrowthCC uint8  `yaml:"rapid_growth_cc"`
+		DecreaseCC    uint8  `yaml:"decrease_cc"`
 		MinTempo      uint8  `yaml:"min_tempo_bpm"`
 	} `yaml:"midi"`
 	Smoothing struct {

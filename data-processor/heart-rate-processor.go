@@ -54,7 +54,6 @@ func (p *HeartRateProcessor) GetSmoothedValue() int {
 // HasRapidGrowth checks if there was rapid growth in the window
 // Only returns true if the window is fully filled and the growth exceeds the threshold
 func (p *HeartRateProcessor) HasRapidGrowth() bool {
-	// Only check if window is fully filled
 	if p.windowSize < p.maxSize {
 		return false
 	}
@@ -63,6 +62,21 @@ func (p *HeartRateProcessor) HasRapidGrowth() bool {
 	beginningValue := p.window[0]
 	endValue := p.window[p.maxSize-1]
 	growth := endValue - beginningValue
+
+	return growth > p.rapidGrowthThreshold
+}
+
+// HasDecrease checks if there was steady decrease in the window
+// Only returns true if the window is fully filled
+func (p *HeartRateProcessor) HasDecrease() bool {
+	if p.windowSize < p.maxSize {
+		return false
+	}
+
+	// Compare beginning and end values
+	beginningValue := p.window[0]
+	endValue := p.window[p.maxSize-1]
+	growth := beginningValue - endValue
 
 	return growth > p.rapidGrowthThreshold
 }
